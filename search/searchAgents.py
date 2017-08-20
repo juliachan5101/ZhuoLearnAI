@@ -279,7 +279,7 @@ class CornersProblem(search.SearchProblem):
         """
         self.walls = startingGameState.getWalls()
         self.startingPosition = startingGameState.getPacmanPosition()
-        top, right = self.walls.height-2, self.walls.width-2
+        top, right = self.walls.height-2, self.walls.width-2 
         self.corners = ((1,1), (1,top), (right, 1), (right, top))
         for corner in self.corners:
             if not startingGameState.hasFood(*corner):
@@ -295,14 +295,26 @@ class CornersProblem(search.SearchProblem):
         space)
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
-
+        cornerleft=[]
+       # util.raiseNotDefined()
+        for i in range(len(self.corners)):
+            cornerleft.append(self.corners[i])
+        return self.startingPosition,cornerleft 
+    
     def isGoalState(self, state):
         """
         Returns whether this search state is a goal state of the problem.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+       # util.raiseNotDefined()
+        point, cornerleft = state
+        if point in self.corners:
+           if point in cornerleft:
+               cornerleft.remove(point)
+               print cornerleft
+           return len(cornerleft) == 0
+        return False
+
 
     def getSuccessors(self, state):
         """
@@ -325,7 +337,18 @@ class CornersProblem(search.SearchProblem):
             #   hitsWall = self.walls[nextx][nexty]
 
             "*** YOUR CODE HERE ***"
+            point, cornerleft = state
+            x, y = point
+            dx, dy = Actions.directionToVector(action)
+            nextx, nexty = (int(x + dx), int(y + dy))
+            hitsWall = self.walls[nextx][nexty]
+            nextPoint = (nextx, nexty)
+            cl = cornerleft[:]
 
+            if not hitsWall:
+                if (nextx, nexty)  in cl:
+                    cl.remove((nextx, nexty))
+                successors.append(((nextPoint, cl), action, 1)) 
         self._expanded += 1 # DO NOT CHANGE
         return successors
 
@@ -360,7 +383,28 @@ def cornersHeuristic(state, problem):
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
     "*** YOUR CODE HERE ***"
-    return 0 # Default to trivial solution
+    #return 0 # Default to trivial solution
+
+    point, cornerleft = state
+    sum = 0
+    cl = cornerleft[:]
+    while len(cl) > 0:
+        dis = []
+        for corner in cl: 
+            distance = util.manhattanDistance(point,corner)
+            dis.append(distance)
+        dist = min(dis)
+        index = None
+        for i,distance in enumerate(dis):
+            if distance == dist:
+                index = i
+        point = cl.pop(index)
+        sum=sum+dist
+    #    pointN = corner
+    #    cornerleft.remove(corner)
+    #    print cornerleft
+    print sum
+    return sum
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"

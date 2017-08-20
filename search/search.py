@@ -118,7 +118,7 @@ def breadthFirstSearch(problem):
         if problem.isGoalState(point):
             return True,[]
         for pointNew,direction,_ in problem.getSuccessors(point):
-            if  pointNew not in visited:
+            if pointNew not in visited:
                 if problem.isGoalState(pointNew):
                     return True, [direction]
         for pointNew2,direction,_ in problem.getSuccessors(point):
@@ -126,12 +126,11 @@ def breadthFirstSearch(problem):
                 win,path=bfs(pointNew2,visited,problem)
                 if win:
                     path.append(direction)
-                    return True,path
+                    return True, path
         return False, []
     point = problem.getStartState()
     win,path=bfs(point,visited,problem)
     path.reverse()
-    print path
     return path
     
                     
@@ -139,7 +138,37 @@ def breadthFirstSearch(problem):
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # util.raiseNotDefined()
+
+    # pathList [(point, [directions..], cost)..]
+    from util import PriorityQueue
+   
+    def ucs(Plist,visited,problem):
+        if Plist.isEmpty():
+            return False,[]
+        pointN,direction,cost = Plist.pop()
+        if problem.isGoalState(pointN):
+            return True,direction
+        for pointN2,directionN2,costN2 in problem.getSuccessors(pointN):
+            if pointN2 not in visited:
+                visited.append(pointN2)
+                DN = direction[:]
+                DN.append(directionN2)
+                cost=cost+costN2
+                Plist.push((pointN2,DN,cost),cost)
+        return ucs(Plist,visited,problem)
+    point = problem.getStartState()
+    Plist = PriorityQueue()
+    Plist.push((point,[],0),0)
+    visited = [point]
+    Win,direction = ucs(Plist,visited,problem)
+    return direction
+
+
+       
+
+
+
 
 def nullHeuristic(state, problem=None):
     """
@@ -151,7 +180,50 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+   #util.raiseNotDefined()
+    from util import PriorityQueue
+    visited=[]
+    def astar(Plist,visited,problem):
+        '''if Plist.isEmpty():
+            return False,[]'''
+        point,direction,cost = Plist.pop()
+        if problem.isGoalState(point):
+            return point,direction,cost
+        visited = [point]
+        '''for pointN2,directionN2,costN2 in problem.getSuccessors(pointN):
+            if pointN2 not in visited:
+                DN2=direction[:]
+                DN2.append(directionN2)
+                cost=cost+costN2+heuristic(pointN2,problem)
+                Plist.push((pointN2,DN2,cost),cost)
+        return astar(Plist,visited,problem)'''
+        costtemp = 0
+        ####
+        while not problem.isGoalState(point):
+            #DisN2 = direction[:]
+            for pointN2,directionN2,costN2 in problem.getSuccessors(point):
+                if pointN2 not in visited:
+                    visited.append(pointN2)
+                    DisN2 = direction[:]
+                    DisN2.append(directionN2)
+                    costtemp=cost+costN2+heuristic(pointN2,problem)
+                    Plist.push((pointN2,DisN2,costtemp),costtemp)
+            point,direction,cost = Plist.pop()
+        ####
+        #point,direction,cost = Plist.pop()    
+        print point,direction,cost
+        return point,direction,cost 
+
+                
+    point = problem.getStartState()
+    Plist = PriorityQueue()
+    Plist.push((point,[],heuristic(point,problem)),heuristic(point,problem))
+    point,direction,cost = astar(Plist,visited,problem)
+    print point,direction,cost
+    return direction
+   
+
+
 
 
 # Abbreviations
